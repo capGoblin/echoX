@@ -8,7 +8,7 @@ import {
   getCrossChainQuote,
 } from "@/lib/bridge/openocean";
 import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
-import { useSwapState } from "./hooks/useSwapState";
+import { useSwapStore } from "@/store/useSwapStore";
 
 // Chain ID mapping for OpenOcean
 const CHAIN_ID_MAP: Record<string, number> = {
@@ -20,14 +20,7 @@ const CHAIN_ID_MAP: Record<string, number> = {
 export function SwapButton() {
   const { provider, signer } = useStore();
   const { handleLogin } = useLogin();
-  const { state } = useSwapState({
-    sellChain: null,
-    sellToken: null,
-    buyChain: null,
-    buyToken: null,
-    sellAmount: "0.0",
-    buyAmount: "0.0",
-  });
+  const state = useSwapStore();
 
   const handleClick = async () => {
     try {
@@ -46,7 +39,7 @@ export function SwapButton() {
         !state.sellAmount ||
         parseFloat(state.sellAmount) <= 0
       ) {
-        console.error("Invalid swap state");
+        console.error("Invalid swap state:", state);
         return;
       }
 
@@ -100,7 +93,7 @@ export function SwapButton() {
         //   to: swapTx.data.to,
         //   data: swapTx.data.data,
         //   value: swapTx.data.value,
-        //   gas: swapTx.data.estimatedGas
+        //   gas: swapTx.data.estimatedGas,
         // });
 
         console.log("Same-chain swap executed:", swapTx);

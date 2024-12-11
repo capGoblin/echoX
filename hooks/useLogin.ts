@@ -4,7 +4,7 @@ import { bscTestnet } from "viem/chains";
 import { useStore } from "@/store/useStore";
 
 export function useLogin() {
-  const { web3auth, setWeb3AuthProvider, setProvider } = useStore();
+  const { web3auth, setWeb3AuthProvider, setProvider, setSigner } = useStore();
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -24,6 +24,7 @@ export function useLogin() {
 
       // @ts-ignore
       const signer = await provider.getAddresses();
+      setSigner(signer);
       console.log(signer);
       console.log(provider);
       router.push("/agent");
@@ -33,4 +34,4 @@ export function useLogin() {
   };
 
   return { handleLogin };
-} 
+}
