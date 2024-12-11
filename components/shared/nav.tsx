@@ -1,15 +1,13 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/theme/mode-toggle';
-import { useStore } from '@/store/useStore';
-import { useRouter } from 'next/navigation';
-import { useLogin } from '@/hooks/useLogin';
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/theme/mode-toggle";
+import { useLogin } from "@/hooks/useLogin";
 
 export function Nav() {
   const { handleLogin } = useLogin();
-  
+
   return (
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50 px-4 py-4"
@@ -25,19 +23,28 @@ export function Nav() {
         >
           echoX
         </motion.div>
-        
+
         <div className="flex items-center gap-6">
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
+          >
             Features
           </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
+          >
             How it Works
           </Button>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground hover:text-foreground"
+          >
             Docs
           </Button>
           <ModeToggle />
-          <Button 
+          <Button
             className="glow-effect bg-blue-600 hover:bg-blue-500"
             onClick={handleLogin}
           >

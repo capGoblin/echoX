@@ -60,16 +60,16 @@
 
 @layer utilities {
   .glow-effect {
-    @apply relative;
+    @apply relative isolate;
   }
   .glow-effect::before {
-    @apply content-[''] absolute -inset-[1px] bg-gradient-to-r from-blue-600 to-blue-400 rounded-[inherit] opacity-0 transition-opacity duration-300;
+    @apply content-[''] absolute -inset-[1px] bg-gradient-to-r from-blue-600 to-blue-400 rounded-[inherit] opacity-0 transition-opacity duration-300 -z-10;
   }
   .glow-effect:hover::before {
     @apply opacity-100;
   }
   .glow-effect::after {
-    @apply content-[''] absolute inset-0 bg-[inherit] rounded-[inherit];
+    @apply content-[''] absolute inset-0 bg-[inherit] rounded-[inherit] -z-10;
   }
 
   .text-gradient {
@@ -100,6 +100,20 @@
 
   .flow-light {
     animation: flowBetweenCards 3s linear infinite;
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  .transform-style-3d {
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
   }
 }
 

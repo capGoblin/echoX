@@ -1,9 +1,17 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useStore } from "@/store/useStore";
+import { useRouter } from "next/navigation";
+import { custom } from "viem";
+import { bscTestnet } from "viem/chains";
+import { createWalletClient } from "viem";
+import { useLogin } from "@/hooks/useLogin";
 
 export function Hero() {
+  const { handleLogin } = useLogin();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4">
       <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -15,15 +23,15 @@ export function Hero() {
             type: "spring",
             stiffness: 260,
             damping: 20,
-            duration: 1.5
+            duration: 1.5,
           }}
         >
           <h1 className="text-7xl md:text-8xl font-bold mb-2">
             echo<span className="text-blue-500">X</span>
           </h1>
         </motion.div>
-        
-        <motion.h2 
+
+        <motion.h2
           className="text-5xl md:text-6xl font-bold mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -33,8 +41,8 @@ export function Hero() {
           <br />
           <span className="text-gradient">Perfected</span>
         </motion.h2>
-        
-        <motion.p 
+
+        <motion.p
           className="text-xl md:text-2xl text-muted-foreground mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -48,11 +56,15 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
         >
-          <Button 
+          <Button
             size="lg"
-            className="glow-effect bg-blue-600 hover:bg-blue-500 text-lg px-8 py-6"
+            variant="default"
+            className="glow-effect bg-blue-600 hover:bg-blue-500 px-8 py-6"
+            onClick={handleLogin}
           >
-            Start Trading with Google
+            <span className="text-primary-foreground text-lg">
+              Sign in with Google
+            </span>
           </Button>
         </motion.div>
       </div>

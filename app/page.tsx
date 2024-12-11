@@ -56,6 +56,10 @@ export default function Home() {
         clientId: WEB3AUTH_CLIENT_ID,
         privateKeyProvider,
         web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
+        uiConfig: {
+          primaryButton: "socialLogin",
+          mode: "dark",
+        },
       });
 
       await web3auth.initModal();
@@ -66,25 +70,6 @@ export default function Home() {
 
     initWeb3Auth();
   }, []);
-
-  const handleLogin = async () => {
-    if (!web3auth) return;
-    const web3authProvider = await web3auth.connect();
-    setWeb3AuthProvider(web3authProvider!);
-
-    const provider = createWalletClient({
-      chain: bscTestnet,
-      transport: custom(web3authProvider!),
-    });
-
-    setProvider(provider);
-    console.log(web3authProvider);
-
-    // @ts-ignore
-    const signer = await provider.getAddresses();
-    console.log(signer);
-    console.log(provider);
-  };
 
   return (
     <main className="relative min-h-screen overflow-hidden">

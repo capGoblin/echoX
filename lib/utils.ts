@@ -59,6 +59,9 @@ export const getEthersSigner = async (web3authProvider: IProvider) => {
   return signer;
 };
 
+
+
+
 // const chain2Config = {
 //   chainNamespace: CHAIN_NAMESPACES.EIP155,
 //   chainId: "0xaa36a7",

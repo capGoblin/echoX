@@ -3,6 +3,7 @@ import axios from "axios";
 interface TokenQuoteInfo {
   symbol: string;
   usd: string;
+  decimals: number;
 }
 
 interface QuoteResponse {

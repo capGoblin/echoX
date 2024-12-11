@@ -95,7 +95,7 @@ export async function getCrossChainQuote(
   toSymbol: string,
   toChainId: number,
   amount: string
-): Promise<QuoteResponse> {
+): Promise<Route> {
   const url =
     `https://open-api.openocean.finance/cross_chain/v1/cross/quoteByOO?` +
     `fromSymbol=${fromSymbol}` +
@@ -109,13 +109,14 @@ export async function getCrossChainQuote(
     if (response.data.code !== 200) {
       throw new Error(`Quote error: ${response.data.code}`);
     }
+    console.log("response", response);
 
     // Filter out null routes
     response.data.data.routes = response.data.data.routes.filter(
       (route): route is Route => route !== null
     );
 
-    return response.data;
+    return response.data.data.routes[0];
   } catch (error) {
     console.error("Failed to get cross-chain quote:", error);
     throw error;
