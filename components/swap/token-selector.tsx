@@ -13,7 +13,7 @@ import { Token, TOKENS } from './types/tokens';
 
 interface TokenSelectorProps {
   defaultToken: Token | null;
-  chainId: 'bsc' | 'base' | null;
+  chainId: 'bsc' | 'base' | 'polygon' | null;
   onSelect?: (token: Token) => void;
 }
 

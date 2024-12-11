@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChainSelector } from './chain-selector';
-import { TokenSelector } from './token-selector';
-import { Input } from '@/components/ui/input';
-import { Chain, Token, TOKENS } from './types/tokens';
+import { useState } from "react";
+import { ChainSelector } from "./chain-selector";
+import { TokenSelector } from "./token-selector";
+import { Input } from "@/components/ui/input";
+import { Chain, Token, TOKENS } from "./types/tokens";
 
 interface SwapInputProps {
   label: string;
@@ -36,7 +36,7 @@ export function SwapInput({
         </div>
         <span className="text-sm text-muted-foreground">Balance: 0.0</span>
       </div>
-      
+
       <div className="flex items-center gap-2">
         <TokenSelector
           defaultToken={selectedToken}
@@ -51,11 +51,11 @@ export function SwapInput({
             className="text-right text-xl bg-transparent border-0 h-auto p-0 focus-visible:ring-0"
             placeholder="0.0"
           />
-          {selectedToken?.price && (
+          {/* {selectedToken?.price && (
             <div className="text-right text-sm text-muted-foreground">
               ${(Number(value || 0) * selectedToken.price).toLocaleString()}
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

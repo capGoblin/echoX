@@ -27,6 +27,8 @@ interface SwapResponse {
     estimatedGas: number;
     minOutAmount: string;
     data: string;
+    chainId: number;
+    gasPrice: string;
   };
 }
 

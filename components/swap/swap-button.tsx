@@ -43,6 +43,9 @@ export function SwapButton() {
         return;
       }
 
+      // Switch to the correct chain before proceeding
+      await provider.switchChain({ id: CHAIN_ID_MAP[state.sellChain.id] });
+
       // Format sell amount with proper decimals
       const formattedSellAmount = (
         parseFloat(state.sellAmount) *
@@ -87,16 +90,28 @@ export function SwapButton() {
           account: signer[0],
         });
 
-        // Execute the transaction
-        // const tx = await provider.sendTransaction({
-        //   from: signer[0],
-        //   to: swapTx.data.to,
-        //   data: swapTx.data.data,
-        //   value: swapTx.data.value,
-        //   gas: swapTx.data.estimatedGas,
+        // // Log transaction costs
+        // console.log("Transaction costs:", {
+        //   gasLimit: BigInt(swapTx.data.estimatedGas),
+        //   gasPrice: BigInt(swapTx.data.gasPrice || "5000000000"),
+        //   value: BigInt(swapTx.data.value),
+        //   totalCost:
+        //     BigInt(swapTx.data.estimatedGas) *
+        //       BigInt(swapTx.data.gasPrice || "5000000000") +
+        //     BigInt(swapTx.data.value),
         // });
 
-        console.log("Same-chain swap executed:", swapTx);
+        // Execute the transaction
+        const tx = await provider.sendTransaction({
+          chain: null,
+          account: signer[0],
+          to: swapTx.data.to as `0x${string}`,
+          data: swapTx.data.data as `0x${string}`,
+          value: BigInt(swapTx.data.value),
+          gas: BigInt(swapTx.data.estimatedGas),
+        });
+
+        console.log("Same-chain swap executed:", tx);
       }
     } catch (error) {
       console.error("Transaction failed:", error);
