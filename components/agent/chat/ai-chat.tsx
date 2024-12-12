@@ -18,7 +18,16 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { ethers } from "ethers";
 import { useSwapStore } from "@/store/useSwapStore";
-import { CHAINS, TOKENS } from "@/components/swap/types/tokens";
+import { CHAINS, Token, TOKENS } from "@/components/swap/types/tokens";
+import { useStore } from "@/store/useStore";
+import { useLogin } from "@/hooks/useLogin";
+import {
+  executeCrossChainSwap,
+  getCrossChainQuote,
+} from "@/lib/bridge/openocean";
+import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
+import { CHAIN_ID_MAP } from "@/components/swap/swap-button";
+import { Chain } from "@/components/swap/types/tokens";
 
 interface Message {
   id: string;
@@ -35,6 +44,106 @@ interface OpenAIResponse {
   }>;
 }
 
+const useSwapHandler = () => {
+  const { provider, signer } = useStore();
+  const { handleLogin } = useLogin();
+  const { setLoading, showToast } = useSwapStore();
+
+  const executeSwap = async (swapDetails: {
+    sellChain: Chain;
+    buyChain: Chain;
+    sellToken: Token;
+    buyToken: Token;
+    sellAmount: string;
+  }) => {
+    try {
+      setLoading(true);
+
+      // If no provider, connect wallet first
+      if (!provider || !signer) {
+        await handleLogin();
+        setLoading(false);
+        return;
+      }
+
+      // Update swap store
+      useSwapStore.getState().updateState({
+        sellChain: swapDetails.sellChain,
+        buyChain: swapDetails.buyChain,
+        sellToken: swapDetails.sellToken,
+        buyToken: swapDetails.buyToken,
+        sellAmount: swapDetails.sellAmount,
+      });
+
+      // Switch to the correct chain
+      await provider.switchChain({
+        id: CHAIN_ID_MAP[swapDetails.sellChain.id],
+      });
+
+      // Format sell amount
+      const formattedSellAmount = (
+        parseFloat(swapDetails.sellAmount) *
+        10 ** swapDetails.sellToken.decimals
+      ).toString();
+
+      // Different chains - execute cross-chain swap
+      if (swapDetails.sellChain.id !== swapDetails.buyChain.id) {
+        const quote = await getCrossChainQuote(
+          swapDetails.sellToken.symbol,
+          CHAIN_ID_MAP[swapDetails.sellChain.id],
+          swapDetails.buyToken.symbol,
+          CHAIN_ID_MAP[swapDetails.buyChain.id],
+          formattedSellAmount
+        );
+
+        const response = await executeCrossChainSwap(signer[0], quote);
+        console.log("Cross-chain swap executed:", response);
+        showToast("Cross-chain swap successful!", "success");
+      }
+      // Same chain - execute regular swap
+      else {
+        const quote = await getSwapQuote(
+          swapDetails.sellChain.id,
+          swapDetails.sellToken.address!,
+          swapDetails.buyToken.address!,
+          formattedSellAmount,
+          "5",
+          { slippage: "1" }
+        );
+
+        const swapTx = await getSwapTransaction({
+          chain: swapDetails.sellChain.id,
+          inTokenAddress: swapDetails.sellToken.address!,
+          outTokenAddress: swapDetails.buyToken.address!,
+          amount: formattedSellAmount,
+          gasPrice: "5",
+          slippage: "1",
+          account: signer[0],
+        });
+
+        const tx = await provider.sendTransaction({
+          chain: null,
+          account: signer[0],
+          to: swapTx.data.to as `0x${string}`,
+          data: swapTx.data.data as `0x${string}`,
+          value: BigInt(swapTx.data.value),
+          gas: BigInt(swapTx.data.estimatedGas),
+        });
+
+        console.log("Same-chain swap executed:", tx);
+        showToast("Swap successful!", "success");
+      }
+    } catch (error) {
+      console.error("Transaction failed:", error);
+      showToast("Transaction failed: " + (error as Error).message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { executeSwap };
+};
+
 export function AIChat({ onClose }: AIChatProps) {
   const WEB3AUTH_CLIENT_ID = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID_ZG!;
   const ADMIN_PRIVATE_KEY = process.env.NEXT_PUBLIC_ADMIN_PRIVATE_KEY_ZG!;
@@ -47,6 +156,8 @@ export function AIChat({ onClose }: AIChatProps) {
   const [loading, setLoading] = useState(false);
   const [broker, setBroker] = useState<any>();
   const [services, setServices] = useState<any>();
+
+  const { executeSwap } = useSwapHandler();
 
   useEffect(() => {
     getServices();
@@ -140,7 +251,6 @@ export function AIChat({ onClose }: AIChatProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
     // Add user message
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -148,11 +258,12 @@ export function AIChat({ onClose }: AIChatProps) {
       content: input,
       timestamp: new Date(),
     };
+    setInput("");
     setMessages((prev) => [...prev, newMessage]);
 
     try {
       // Get AI response
-      await request(broker, services[0], input);
+      await request(broker, services[0], newMessage.content);
       console.log("Response:", response);
       // Try to parse the JSON response
       try {
@@ -175,6 +286,7 @@ export function AIChat({ onClose }: AIChatProps) {
           swapDetails.buyToken &&
           swapDetails.sellAmount
         ) {
+          console.log("Valid swap details");
           // Find the actual Chain and Token objects
           const sellChain = CHAINS.find(
             (chain) => chain.id === swapDetails.sellChain.toLowerCase()
@@ -182,30 +294,25 @@ export function AIChat({ onClose }: AIChatProps) {
           const buyChain = CHAINS.find(
             (chain) => chain.id === swapDetails.buyChain.toLowerCase()
           );
+          console.log("Found chains:", { sellChain, buyChain });
+
           const sellToken = TOKENS[
             swapDetails.sellChain.toLowerCase() as keyof typeof TOKENS
           ]?.find((token) => token.symbol === swapDetails.sellToken);
           const buyToken = TOKENS[
             swapDetails.buyChain.toLowerCase() as keyof typeof TOKENS
           ]?.find((token) => token.symbol === swapDetails.buyToken);
+          console.log("Found tokens:", { sellToken, buyToken });
 
           if (sellChain && buyChain && sellToken && buyToken) {
-            // Update swap store
-            useSwapStore.getState().updateState({
+            console.log("All tokens and chains found, executing swap...");
+            await executeSwap({
               sellChain,
               buyChain,
               sellToken,
               buyToken,
               sellAmount: swapDetails.sellAmount,
             });
-
-            // Get the swap button component's handleClick function
-            const swapButtonElement = document.querySelector(
-              "button.swap-button"
-            ) as HTMLButtonElement;
-            if (swapButtonElement) {
-              swapButtonElement.click();
-            }
           }
         }
       } catch (error) {

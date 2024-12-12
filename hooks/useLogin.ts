@@ -53,7 +53,7 @@ export function useLogin() {
 
   const initWeb3Auth = async () => {
     const privateKeyProvider = new EthereumPrivateKeyProvider({
-      config: { chainConfig: CHAIN_CONFIG.base },
+      config: { chainConfig: CHAIN_CONFIG.bsc },
     });
 
     const web3auth = new Web3Auth({
@@ -64,7 +64,7 @@ export function useLogin() {
         primaryButton: "socialLogin",
         mode: "dark",
       },
-      chainConfig: CHAIN_CONFIG.base,
+      chainConfig: CHAIN_CONFIG.bsc,
     });
 
     await web3auth.initModal();
@@ -79,7 +79,7 @@ export function useLogin() {
     setWeb3AuthProvider(web3authProvider!);
 
     const provider = createWalletClient({
-      chain: base,
+      chain: bsc,
       transport: custom(web3authProvider!),
     });
 

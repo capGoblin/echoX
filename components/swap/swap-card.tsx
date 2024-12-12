@@ -10,6 +10,8 @@ import { useSwapStore } from "@/store/useSwapStore";
 import { useMemo, useEffect } from "react";
 import { getSwapQuote } from "@/lib/swap/openocean";
 import { getCrossChainQuote } from "@/lib/bridge/openocean";
+import { SwapLoader } from "@/components/ui/loader";
+import { CustomToast } from "@/components/ui/toast";
 
 // Chain ID mapping for OpenOcean
 const CHAIN_ID_MAP: Record<string, number> = {
@@ -26,6 +28,8 @@ export function SwapCard() {
   const buyToken = useSwapStore((state) => state.buyToken);
   const sellAmount = useSwapStore((state) => state.sellAmount);
   const buyAmount = useSwapStore((state) => state.buyAmount);
+  const isLoading = useSwapStore((state) => state.isLoading);
+  const toast = useSwapStore((state) => state.toast);
 
   // Memoize the actions
   const actions = useMemo(
@@ -154,6 +158,7 @@ export function SwapCard() {
           </p>
         </div>
       </Card>
+      {toast && <CustomToast {...toast} />}
     </motion.div>
   );
 }

@@ -4,6 +4,8 @@ import * as React from "react";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 
@@ -115,6 +117,56 @@ ToastDescription.displayName = ToastPrimitives.Description.displayName;
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>;
+
+interface CustomToastProps {
+  message: string;
+  type?: "success" | "error" | "info";
+  show?: boolean;
+  className?: string;
+}
+
+export function CustomToast({
+  message,
+  type = "info",
+  show = true,
+  className,
+}: CustomToastProps) {
+  const Icon = {
+    success: CheckCircle,
+    error: XCircle,
+    info: AlertCircle,
+  }[type];
+
+  const bgColor = {
+    success: "bg-green-500/10",
+    error: "bg-red-500/10",
+    info: "bg-blue-500/10",
+  }[type];
+
+  const iconColor = {
+    success: "text-green-500",
+    error: "text-red-500",
+    info: "text-blue-500",
+  }[type];
+
+  if (!show) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className={cn(
+        "fixed bottom-4 right-4 flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-md border border-white/10",
+        bgColor,
+        className
+      )}
+    >
+      <Icon className={cn("h-5 w-5", iconColor)} />
+      <p className="text-sm text-white/90">{message}</p>
+    </motion.div>
+  );
+}
 
 export {
   type ToastProps,

@@ -8,11 +8,20 @@ export interface SwapState {
   buyToken: Token | null;
   sellAmount: string;
   buyAmount: string;
+  isLoading: boolean;
+  toast: {
+    message: string;
+    type: "success" | "error" | "info";
+    show: boolean;
+  } | null;
 }
 
 interface SwapStore extends SwapState {
   swapTokens: () => void;
   updateState: (updates: Partial<SwapState>) => void;
+  setLoading: (loading: boolean) => void;
+  showToast: (message: string, type: "success" | "error" | "info") => void;
+  hideToast: () => void;
 }
 
 export const useSwapStore = create<SwapStore>((set) => ({
@@ -23,6 +32,8 @@ export const useSwapStore = create<SwapStore>((set) => ({
   buyToken: TOKENS.base[0],
   sellAmount: "0.0",
   buyAmount: "0.0",
+  isLoading: false,
+  toast: null,
 
   // Actions
   swapTokens: () =>
@@ -36,4 +47,15 @@ export const useSwapStore = create<SwapStore>((set) => ({
     })),
 
   updateState: (updates) => set((state) => ({ ...state, ...updates })),
+  
+  setLoading: (loading) => set({ isLoading: loading }),
+
+  showToast: (message, type) => {
+    set({ toast: { message, type, show: true } });
+    setTimeout(() => {
+      set({ toast: null });
+    }, 3000);
+  },
+
+  hideToast: () => set({ toast: null }),
 })); 

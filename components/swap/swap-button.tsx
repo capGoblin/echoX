@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
 import { useLogin } from "@/hooks/useLogin";
+import { SwapLoader } from "@/components/ui/loader";
 import {
   executeCrossChainSwap,
   getCrossChainQuote,
@@ -11,7 +12,7 @@ import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
 import { useSwapStore } from "@/store/useSwapStore";
 
 // Chain ID mapping for OpenOcean
-const CHAIN_ID_MAP: Record<string, number> = {
+export const CHAIN_ID_MAP: Record<string, number> = {
   bsc: 56,
   base: 8453,
   polygon: 137,
@@ -24,9 +25,15 @@ export function SwapButton() {
 
   const handleClick = async () => {
     try {
+      console.log("Swap button clicked");
+      const setLoading = useSwapStore.getState().setLoading;
+      const showToast = useSwapStore.getState().showToast;
+      setLoading(true);
+
       // If no provider, connect wallet first
       if (!provider || !signer) {
         await handleLogin();
+        setLoading(false);
         return;
       }
 
@@ -40,6 +47,8 @@ export function SwapButton() {
         parseFloat(state.sellAmount) <= 0
       ) {
         console.error("Invalid swap state:", state);
+        setLoading(false);
+        showToast("Please fill in all swap details", "error");
         return;
       }
 
@@ -66,6 +75,7 @@ export function SwapButton() {
         // Execute cross-chain swap
         const response = await executeCrossChainSwap(signer[0], quote);
         console.log("Cross-chain swap executed:", response);
+        showToast("Cross-chain swap successful!", "success");
       }
       // Same chain - execute regular swap
       else {
@@ -90,17 +100,6 @@ export function SwapButton() {
           account: signer[0],
         });
 
-        // // Log transaction costs
-        // console.log("Transaction costs:", {
-        //   gasLimit: BigInt(swapTx.data.estimatedGas),
-        //   gasPrice: BigInt(swapTx.data.gasPrice || "5000000000"),
-        //   value: BigInt(swapTx.data.value),
-        //   totalCost:
-        //     BigInt(swapTx.data.estimatedGas) *
-        //       BigInt(swapTx.data.gasPrice || "5000000000") +
-        //     BigInt(swapTx.data.value),
-        // });
-
         // Execute the transaction
         const tx = await provider.sendTransaction({
           chain: null,
@@ -112,18 +111,37 @@ export function SwapButton() {
         });
 
         console.log("Same-chain swap executed:", tx);
+        showToast("Swap successful!", "success");
       }
+
+      setLoading(false);
     } catch (error) {
       console.error("Transaction failed:", error);
+      useSwapStore.getState().setLoading(false);
+      useSwapStore
+        .getState()
+        .showToast("Transaction failed: " + (error as Error).message, "error");
     }
   };
 
+  const isLoading = useSwapStore((state) => state.isLoading);
+
   return (
     <Button
-      className="w-full mt-4 bg-blue-600 hover:bg-blue-500"
+      className="w-full mt-4 bg-blue-600 hover:bg-blue-500 swap-button"
       onClick={handleClick}
+      disabled={isLoading}
     >
-      {!provider ? "Connect Wallet" : "Swap"}
+      {!provider ? (
+        "Connect Wallet"
+      ) : isLoading ? (
+        <div className="flex items-center gap-2">
+          <SwapLoader className="scale-50" />
+          <span>Swapping</span>
+        </div>
+      ) : (
+        "Swap"
+      )}
     </Button>
   );
 }
