@@ -88,7 +88,7 @@ export function SwapButton() {
       // Same chain - execute regular swap
       else {
         // Get swap quote first
-        const quote = await getSwapQuote(
+        await getSwapQuote(
           state.sellChain.id,
           state.sellToken.address!,
           state.buyToken.address!,

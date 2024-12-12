@@ -9,13 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@0glabs/0g-serving-broker": "^0.1.0",
     "@1inch/cross-chain-sdk": "^0.1.11",
+    "@download/blockies": "^1.0.3",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-scroll-area": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.2",
     "@types/web3": "^1.2.2",
     "class-variance-authority": "^0.7.1",
+    "@web3auth/base": "^8.12.2",
+    "@web3auth/ethereum-provider": "^8.12.3",
+    "@web3auth/modal": "^8.12.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.13.5",
     "lucide-react": "^0.468.0",

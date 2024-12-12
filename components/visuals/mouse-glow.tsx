@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export function MouseGlow() {
   const glowRef = useRef<HTMLDivElement>(null);
-  const throttleRef = useRef<number>();
+  const throttleRef = useRef<number | undefined>(0);
 
   useEffect(() => {
     const glow = glowRef.current;

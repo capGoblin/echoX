@@ -1,25 +1,25 @@
 import {
-  SDK,
-  HashLock,
-  PrivateKeyProviderConnector,
-  NetworkEnum,
-  SupportedChain,
   EIP712TypedData,
+  HashLock,
+  NetworkEnum,
+  SDK,
+  SupportedChain,
 } from "@1inch/cross-chain-sdk";
-import Web3 from "web3";
-import { solidityPackedKeccak256 } from "ethers";
-import { randomBytes } from "crypto";
 import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
+import { randomBytes } from "crypto";
+import { solidityPackedKeccak256 } from "ethers";
 
 import { BlockchainProviderConnector } from "@1inch/cross-chain-sdk";
-import { ethers } from "ethers";
-import { BrowserProvider } from "ethers";
-import { Provider } from "react";
+import { BrowserProvider, TransactionRequest } from "ethers";
+
+interface Web3Provider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+}
 
 class Web3AuthBlockchainProvider implements BlockchainProviderConnector {
-  constructor(private web3authProvider: any) {}
+  constructor(private web3authProvider: Web3Provider) {}
 
   async signTypedData(
     walletAddress: string,
@@ -42,7 +42,7 @@ class Web3AuthBlockchainProvider implements BlockchainProviderConnector {
     });
   }
 
-  async sendTransaction(tx: any): Promise<string> {
+  async sendTransaction(tx: TransactionRequest): Promise<string> {
     const signer = new BrowserProvider(this.web3authProvider).getSigner();
     const txResponse = await (await signer).sendTransaction(tx);
     return txResponse.hash;
@@ -58,6 +58,7 @@ const chainConfig = {
   rpcTarget: "https://bsc-testnet-dataseed.bnbchain.org",
   displayName: "BNB Chain Testnet",
   blockExplorerUrl: "https://testnet.bscscan.com",
+  blockExplorer: "https://testnet.bscscan.com",
   ticker: "tBNB",
   tickerName: "BNB",
   logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
@@ -78,7 +79,7 @@ await web3auth.initModal();
 const web3authProvider = await web3auth.connect();
 
 const customBlockchainProvider = new Web3AuthBlockchainProvider(
-  web3authProvider
+  web3authProvider!
 );
 
 const sdk = new SDK({
@@ -87,9 +88,7 @@ const sdk = new SDK({
   blockchainProvider: customBlockchainProvider,
 });
 
-const makerPrivateKey = "0xYourPrivateKey";
 const makerAddress = "0xYourWalletAddress";
-const nodeUrl = "https://mainnet.infura.io/v3/350b888d28734814828b3a7c4656c32f";
 
 // const blockchainProvider = new PrivateKeyProviderConnector(
 //   makerPrivateKey,

@@ -2,11 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useStore } from "@/store/useStore";
-import { useRouter } from "next/navigation";
-import { custom } from "viem";
-import { bscTestnet } from "viem/chains";
-import { createWalletClient } from "viem";
 import { useLogin } from "@/hooks/useLogin";
 
 export function Hero() {

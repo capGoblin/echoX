@@ -1,21 +1,10 @@
 "use client";
 import { createZGServingNetworkBroker } from "@0glabs/0g-serving-broker";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AIChatProps } from "./types";
 import { ChatHeader } from "./chat-header";
 import { MessageList } from "./message-list";
 import { MessageInput } from "./message-input";
-import { getEthersSigner } from "@/lib/utils";
-import {
-  createWalletClient,
-  custom,
-  defineChain,
-  WalletClient,
-  Address,
-} from "viem";
-import { Web3Auth } from "@web3auth/modal";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import { ethers } from "ethers";
 import { useSwapStore } from "@/store/useSwapStore";
 import { CHAINS, Token, TOKENS } from "@/components/swap/types/tokens";
@@ -28,7 +17,6 @@ import {
 import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
 import { CHAIN_ID_MAP } from "@/components/swap/swap-button";
 import { Chain } from "@/components/swap/types/tokens";
-import { CustomToast } from "@/components/ui/toast";
 
 interface Message {
   id: string;
@@ -37,12 +25,36 @@ interface Message {
   timestamp: Date;
 }
 
-interface OpenAIResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
+interface ServiceMetadata {
+  endpoint: string;
+  model: string;
+}
+
+interface Service {
+  provider: string;
+  name: string;
+}
+
+interface ZGBroker {
+  settleFee: (provider: string, name: string, amount: number) => Promise<void>;
+  getServiceMetadata: (
+    provider: string,
+    name: string
+  ) => Promise<ServiceMetadata>;
+  getRequestHeaders: (
+    provider: string,
+    name: string,
+    prompt: string
+  ) => Promise<Record<string, string>>;
+  listService: () => Promise<Service[]>;
+}
+
+interface SwapDetails {
+  sellChain: string;
+  buyChain: string;
+  sellToken: string;
+  buyToken: string;
+  sellAmount: string;
 }
 
 const useSwapHandler = () => {
@@ -111,7 +123,7 @@ const useSwapHandler = () => {
       }
       // Same chain - execute regular swap
       else {
-        const quote = await getSwapQuote(
+        await getSwapQuote(
           swapDetails.sellChain.id,
           swapDetails.sellToken.address!,
           swapDetails.buyToken.address!,
@@ -154,7 +166,6 @@ const useSwapHandler = () => {
 };
 
 export function AIChat({ onClose }: AIChatProps) {
-  const WEB3AUTH_CLIENT_ID = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID_ZG!;
   const ADMIN_PRIVATE_KEY = process.env.NEXT_PUBLIC_ADMIN_PRIVATE_KEY_ZG!;
   const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
   const adminWallet = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
@@ -170,37 +181,28 @@ export function AIChat({ onClose }: AIChatProps) {
   ]);
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [broker, setBroker] = useState<any>();
-  const [services, setServices] = useState<any>();
+  const [broker, setBroker] = useState<ZGBroker | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
 
   const { executeSwap } = useSwapHandler();
 
   useEffect(() => {
     getServices();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getServices = async (): Promise<void> => {
     try {
-      // Initialize broker with connected wallet
       const broker = await createZGServingNetworkBroker(adminWallet);
       const services = await broker.listService();
       setBroker(broker);
       setServices(services);
       console.log("Services:", services);
-
-      // // Proceed with request after services are loaded
-      // if (services && services.length > 0) {
-      //   await request(broker, services[0]);
-      // }
     } catch (error) {
       console.error("Error getting services:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const request = async (broker: any, service: any, input: string) => {
+  const request = async (broker: ZGBroker, service: Service, input: string) => {
     try {
       const prompt = `You are a helpful AI assistant for a crypto swap application. When users describe a swap they want to perform, extract the following information from their message:
         - sellChain (the chain they want to swap from)
@@ -226,21 +228,17 @@ export function AIChat({ onClose }: AIChatProps) {
         Keep your response strictly in JSON format without any additional text.
 
         User's message: "${input}"`;
-      // const prompt = "what model are you using?";
 
       await broker.settleFee(service.provider, service.name, 0.00000000001);
-      console.log("Settled fee");
       const { endpoint, model } = await broker.getServiceMetadata(
         service.provider,
         service.name
       );
-      console.log("Got service metadata");
       const headers = await broker.getRequestHeaders(
         service.provider,
         service.name,
         prompt
       );
-      console.log("Got request headers");
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -253,7 +251,6 @@ export function AIChat({ onClose }: AIChatProps) {
           headers,
         }),
       });
-      console.log("Got response");
       const completion = await response.json();
       if (completion) {
         console.log("Full completion:", completion);
@@ -280,7 +277,7 @@ export function AIChat({ onClose }: AIChatProps) {
 
     try {
       // Get AI response
-      await request(broker, services[0], newMessage.content);
+      await request(broker!, services[0], newMessage.content);
       console.log("Response:", response);
       // Try to parse the JSON response
       try {
@@ -349,7 +346,7 @@ export function AIChat({ onClose }: AIChatProps) {
     }
   };
 
-  const getSwapProgressMessage = (swapDetails: any) => {
+  const getSwapProgressMessage = (swapDetails: SwapDetails | null) => {
     if (!swapDetails) return "Processing your request...";
 
     const { sellChain, buyChain, sellToken, buyToken, sellAmount } =

@@ -11,7 +11,7 @@ export function NeuralNetwork() {
   const nodesRef = useRef<Node[]>([]);
   const pulseRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const frameIdRef = useRef<number>();
+  const frameIdRef = useRef<number | undefined>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;

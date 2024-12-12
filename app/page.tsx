@@ -1,15 +1,5 @@
 "use client";
 
-import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { Web3Auth } from "@web3auth/modal";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { createWalletClient, custom } from "viem";
-import { sepolia, bscTestnet } from "viem/chains";
-import { ethers, parseUnits } from "ethers";
-import { getEthersSigner } from "@/lib/utils";
-import { useStore } from "@/store/useStore";
 import { Suspense } from "react";
 import { Nav } from "@/components/home/nav";
 import { Hero } from "@/components/home/hero";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function SwapHeader() {
