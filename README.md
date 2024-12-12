@@ -47,4 +47,30 @@ EchoX isn’t just another trading tool — it’s a **new paradigm in decentral
 - **Ultimate Aggregation Power**: Aggregates liquidity from other aggregators, multiplying the efficiency and reducing costs.  
 - **Effortless User Experience**: Natural language commands and a sleek interface make complex trading tasks simple for anyone.  
 
+--- 
+
+## **Transparent Fee Settlement & Verified Output Usage**  
+
+In **EchoX**, transparency and trust are key principles. As part of this commitment, we utilize **0G’s Service Marketplace** to ensure that every AI-driven decision is verified and transparent to users. The `settleFee` function is employed to interact with the provider's services to validate and settle fees. This ensures that all actions taken in the system are properly accounted for and aligned with the provider’s requirements.
+
+```typescript 
+await broker.settleFee(service.provider, service.name, 0.00000000001);
+```
+[Snippet Code Link](https://github.com/capGoblin/echoX/blob/main/components/agent/chat/ai-chat.tsx#L232)
+
+This function settles a minimal fee with the provider, ensuring that the cost of using the service is properly managed and recorded. Once the fee is settled, the AI processes the verified output. This output is logged and used to guide trading decisions, ensuring compliance with the provider's rules and offering transparency in every operation.
+
+```typescript
+const completion = await response.json();
+if (completion) {
+  console.log("Full completion:", completion);  // Logs the verified response
+  const responseContent = completion.choices[0].message.content;
+  setResponse(responseContent);
+}
+```
+[Snippet Code Link](https://github.com/capGoblin/echoX/blob/main/components/agent/chat/ai-chat.tsx#L256-L259)
+
+By showcasing the verified output directly in the UI, in logs and utilizing it for decision-making, EchoX not only ensures that the trading process is trustless but also provides an auditable trail for users, demonstrating full compliance with the provider's requirements. This approach highlights the reliability and transparency of the system, reinforcing user confidence in the decentralized nature of EchoX's trading engine.
+
+
 **EchoX: Where Decentralized AI Meets Cross-Chain Liquidity.**
