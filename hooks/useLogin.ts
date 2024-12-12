@@ -59,7 +59,7 @@ export function useLogin() {
     const web3auth = new Web3Auth({
       clientId: WEB3AUTH_CLIENT_ID,
       privateKeyProvider,
-      web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+      web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
       uiConfig: {
         primaryButton: "socialLogin",
         mode: "dark",
