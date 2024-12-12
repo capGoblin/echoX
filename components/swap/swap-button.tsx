@@ -74,7 +74,15 @@ export function SwapButton() {
 
         // Execute cross-chain swap
         const response = await executeCrossChainSwap(signer[0], quote);
-        console.log("Cross-chain swap executed:", response);
+        const tx = await provider.sendTransaction({
+          chain: null,
+          account: signer[0],
+          to: response.data.to as `0x${string}`,
+          data: response.data.data as `0x${string}`,
+          value: BigInt(response.data.value),
+        });
+
+        console.log("Cross-chain swap executed:", tx);
         showToast("Cross-chain swap successful!", "success");
       }
       // Same chain - execute regular swap

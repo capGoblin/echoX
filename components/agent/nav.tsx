@@ -4,9 +4,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/theme/mode-toggle";
 import { useLogin } from "@/hooks/useLogin";
+import { useStore } from "@/store/useStore";
+import { AddressDisplay } from "@/components/ui/address-display";
 
 export function Nav() {
   const { handleLogin } = useLogin();
+  const { signer } = useStore();
+  const address = signer?.[0] || "";
 
   return (
     <motion.nav
@@ -25,31 +29,12 @@ export function Nav() {
         </motion.div>
 
         <div className="flex items-center gap-6">
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Features
-          </Button>
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            How it Works
-          </Button>
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Docs
-          </Button>
+          {address ? (
+            <AddressDisplay address={address} />
+          ) : (
+            <Button onClick={handleLogin}>Connect Wallet</Button>
+          )}
           <ModeToggle />
-          <Button
-            className="glow-effect bg-blue-600 hover:bg-blue-500"
-            onClick={handleLogin}
-          >
-            Launch App
-          </Button>
         </div>
       </div>
     </motion.nav>

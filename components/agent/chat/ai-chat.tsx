@@ -28,6 +28,7 @@ import {
 import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
 import { CHAIN_ID_MAP } from "@/components/swap/swap-button";
 import { Chain } from "@/components/swap/types/tokens";
+import { CustomToast } from "@/components/ui/toast";
 
 interface Message {
   id: string;
@@ -56,6 +57,7 @@ const useSwapHandler = () => {
     buyToken: Token;
     sellAmount: string;
   }) => {
+    console.log("Executing swap:", swapDetails);
     try {
       setLoading(true);
 
@@ -97,7 +99,14 @@ const useSwapHandler = () => {
         );
 
         const response = await executeCrossChainSwap(signer[0], quote);
-        console.log("Cross-chain swap executed:", response);
+        const tx = await provider.sendTransaction({
+          chain: null,
+          account: signer[0],
+          to: response.data.to as `0x${string}`,
+          data: response.data.data as `0x${string}`,
+          value: BigInt(response.data.value),
+        });
+        console.log("Cross-chain swap executed:", tx);
         showToast("Cross-chain swap successful!", "success");
       }
       // Same chain - execute regular swap
@@ -150,7 +159,15 @@ export function AIChat({ onClose }: AIChatProps) {
   const provider = new ethers.JsonRpcProvider("https://evmrpc-testnet.0g.ai");
   const adminWallet = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      type: "ai",
+      content:
+        "Hi! I'm your AI trading assistant. I can help you swap tokens across different chains the cheapest way possible. Try something like 'I want to swap 0.1 BNB to USDC on base'.",
+      timestamp: new Date(),
+    },
+  ]);
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);

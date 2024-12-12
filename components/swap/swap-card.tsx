@@ -29,7 +29,6 @@ export function SwapCard() {
   const sellAmount = useSwapStore((state) => state.sellAmount);
   const buyAmount = useSwapStore((state) => state.buyAmount);
   const isLoading = useSwapStore((state) => state.isLoading);
-  const toast = useSwapStore((state) => state.toast);
 
   // Memoize the actions
   const actions = useMemo(
@@ -158,7 +157,6 @@ export function SwapCard() {
           </p>
         </div>
       </Card>
-      {toast && <CustomToast {...toast} />}
     </motion.div>
   );
 }

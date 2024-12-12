@@ -18,7 +18,7 @@ import {
 import { getSwapQuote, getSwapTransaction } from "@/lib/swap/openocean";
 import { AgentBackground } from "@/components/agent/background";
 import { CardContainer } from "@/components/agent/card-container";
-import { Nav } from "@/components/shared/nav";
+import { Nav } from "@/components/agent/nav";
 
 const Page = () => {
   const [messages, setMessages] = React.useState<
